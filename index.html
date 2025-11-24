@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Convite Personalizado - TROMBETAS & FESTAS 2025</title>
+    <!-- Carrega o Tailwind CSS para o estilo -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Inclui a biblioteca html2canvas para permitir a geração da imagem (download) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <!-- Configuração personalizada do Tailwind e CSS de controle de layout -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0d1117; /* Fundo escuro */
+            color: white;
+        }
+
+        /* Estilo base para a tela de visualização */
+        .preview-screen {
+            background-size: cover;
+            background-position: top; /* Prioriza a parte superior da imagem */
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end; /* Conteúdo na parte inferior da tela */
+            position: relative;
+            width: 100%; 
+            min-height: 400px;
+            transition: background-image 0.5s ease-in-out; 
+            overflow: hidden; 
+        }
+
+        /* Classe para forçar a proporção 16:9 */
+        .aspect-16-9 {
+            aspect-ratio: 16 / 9;
+        }
+
+        /* Classe para forçar a proporção 9:16 (retrato) */
+        .aspect-9-16 {
+            aspect-ratio: 9 / 16;
+            max-height: 80vh; /* Ajuste para caber na tela do PC */
+            max-width: 400px; 
+        }
+
+        .content-overlay {
+            background-color: rgba(0, 0, 0, 0.6); /* Fundo semi-transparente para o texto */
+            /* Padding base em REM, será escalonado pelo JS */
+            padding: 0.75rem 1rem; 
+            width: 100%;
+            text-align: center;
+            border-top-left-radius: 0.5rem;
+            border-top-right-radius: 0.5rem;
+            z-index: 10;
+        }
+        
+        #preview-container {
+             position: relative;
+        }
+        
+        /* Classe personalizada para as cores */
+        .text-custom-yellow {
+            color: #f4f410 !important;
+        }
+        .text-custom-red {
+            color: #e6ab52 !important;
+        }
+        .text-custom-white {
+            color: #f0f0f0 !important;
+        }
+        
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center">
+
+    <!-- Container Principal do Aplicativo -->
+    <div id="app-container" class="w-full max-w-4xl p-4 md:p-8">
+
+        <!-- TELA 1: Formulário de Entrada e Seleção de Formato -->
+        <div id="form-screen" class="space-y-6">
+            <h1 class="text-3xl font-bold text-center mb-6">Crie seu Convite Personalizado para o</br>TROMBETAS & FESTAS 2025</h1>
+            <p class="text-center text-gray-400">Preencha os dados e escolha o formato da imagem de fundo para gerar seu convite.</p>
+
+            <!-- CAMPOS DE ENTRADA -->
+            <div class="space-y-4">
+                <div>
+                    <!-- CAMPO 1: Nome do Convidado -->
+                    <label for="guest-name" class="block text-sm font-medium text-gray-300">1. Nome do Convidado</label>
+                    <input type="text" id="guest-name" placeholder="Ex: João Paulo"
+                           class="mt-1 block w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-amber-500 focus:border-amber-500 transition duration-150">
+                </div>
+                <div>
+                    <!-- CAMPO 2: Endereço da Igreja -->
+                    <label for="church-address" class="block text-sm font-medium text-gray-300">2. Endereço da Igreja</label>
+                    <input type="text" id="church-address" placeholder="Ex: Av. General Mello, 85, Bairro Jd. Califórnia"
+                           class="mt-1 block w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-amber-500 focus:border-amber-500 transition duration-150">
+                </div>
+                <div>
+                    <!-- CAMPO 3: Cidade da Igreja -->
+                    <label for="church-city" class="block text-sm font-medium text-gray-300">3. Cidade da Igreja</label>
+                    <input type="text" id="church-city" placeholder="Ex: Cuiabá/MT"
+                           class="mt-1 block w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-amber-500 focus:border-amber-500 transition duration-150">
+                </div>
+                <div>
+                    <!-- CAMPO 4: Horário Local (Opcional - Usado se diferente de 17h BRT) -->
+                    <label for="local-time" class="block text-sm font-medium text-gray-300">4. Horário Local (Opcional)</label>
+                    <input type="text" id="local-time" placeholder="Ex: 16h (se diferente de 17h BRT)"
+                           class="mt-1 block w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-amber-500 focus:border-amber-500 transition duration-150">
+                    <p class="text-xs text-gray-500 mt-1">Deixe em branco para usar o horário padrão: 17h (Horário de Brasília).</p>
+                </div>
+            </div>
+
+            <!-- SELETOR DE FORMATO (CAMPO 5) -->
+            <div class="space-y-3">
+                <p class="text-lg font-semibold text-gray-200">5. Escolha o Formato da Imagem de Fundo:</p>
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <button id="select-16-9" data-format="16:9"
+                            class="format-button flex-1 py-3 px-6 rounded-xl border-2 border-transparent hover:border-amber-500 bg-gray-800 transition duration-300 shadow-lg">
+                        <span class="font-bold">Formato 16:9</span> <span class="text-sm text-gray-400">(Desktop / Paisagem)</span>
+                    </button>
+                    <button id="select-9-16" data-format="9:16"
+                            class="format-button flex-1 py-3 px-6 rounded-xl border-2 border-transparent hover:border-amber-500 bg-gray-800 transition duration-300 shadow-lg">
+                        <span class="font-bold">Formato 9:16</span> <span class="text-sm text-gray-400">(Celular / Retrato)</span>
+                    </button>
+                </div>
+                <div id="format-error" class="text-custom-yellow text-sm text-center hidden">
+                    Por favor, selecione um formato antes de prosseguir.
+                </div>
+            </div>
+
+            <button id="generate-invite"
+                    class="w-full py-3 bg-amber-600 hover:bg-amber-700 rounded-lg font-bold text-white shadow-xl transition duration-300 disabled:opacity-50 mt-6">
+                Gerar Convite
+            </button>
+        </div>
+
+        <!-- TELA 2: Visualização do Convite Personalizado -->
+        <div id="preview-screen" class="hidden flex flex-col items-center space-y-4">
+            
+            <!-- Contêiner do Convite (Alvo para o html2canvas) -->
+            <div id="preview-container" class="preview-screen rounded-xl shadow-2xl relative">
+                
+                <!-- Overlay de Conteúdo Personalizado -->
+                <div class="content-overlay">
+                    <p class="text-sm font-bold uppercase text-custom-red mb-4">CONVITE ESPECIAL</p>
+
+                    <!-- DADOS PERSONALIZADOS -->
+                    <!-- Nome do Convidado -->
+                    <h2 class="text-2xl font-extrabold mb-2 text-custom-yellow" id="display-guest-name">Olá, Convidado!</h2>
+
+                    <!-- Texto fixo -->
+                    <p class="text-sm text-custom-white mb-2">
+                        Você e sua família são nossos convidados de honra para o:
+                    </p>
+                    
+                    <!-- Nome do Culto (Fixo) com quebra de linha condicional para 9:16 -->
+                    <p class="text-lg font-bold text-custom-red mb-4" id="invite-title">
+                        "Culto Internacional<br>Trombetas e Festas 2025"
+                    </p>
+                    
+                    <!-- Texto Fixo da Informação do Evento -->
+                    <div class="text-sm text-gray-200 space-y-1">
+                        <p class="text-custom-white">Será um evento de alerta para o mundo sobre os acontecimentos atuais que antecedem a volta de Jesus.</p>
+                        
+                        <!-- Data e Horário -->
+                        <div id="date-time-container" class="flex justify-center flex-col sm:flex-row sm:space-x-2">
+                            <p id="display-date">Data: <span class="font-bold text-custom-white">29 de Novembro de 2025</span></p>
+                            <p id="display-time">Horário: <span class="font-bold text-custom-white">17h (Horário de Brasília)</span></p>
+                        </div>
+
+                        <p class="mt-2 text-custom-white">Convidamos vocês para assistirem ao evento conosco no endereço:</p>
+                        
+                        <!-- Endereço e Cidade -->
+                        <p class="font-bold text-custom-yellow" id="display-location">
+                            Av. General Mello, 85, Jd. Califórnia, Cuiabá - MT
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Botão de Voltar -->
+                <button onclick="showFormScreen()"
+                        class="absolute top-4 left-4 p-2 bg-gray-800/70 hover:bg-gray-700 rounded-full text-white transition duration-300 z-20">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- BOTÃO DE DOWNLOAD -->
+            <button id="download-invite"
+                    class="w-full max-w-sm py-3 bg-green-600 hover:bg-green-700 rounded-lg font-bold text-white shadow-xl transition duration-300 flex items-center justify-center space-x-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                <span>Baixar Convite</span>
+            </button>
+            
+            <div id="loading-message" class="text-sm text-gray-400 hidden">
+                Gerando imagem...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variáveis globais
+        let selectedFormat = null;
+        
+        // --- CAMINHOS RELATIVOS DAS IMAGENS NO REPOSITÓRIO GITHUB ---
+        const imageUrls = {
+            '16:9': './Convite 16-9.jpg', 
+            '9:16': './Convite 9-16.jpg'  
+        };
+        
+        // Elementos do DOM
+        const htmlElement = document.documentElement;
+        const formScreen = document.getElementById('form-screen');
+        const previewScreen = document.getElementById('preview-screen');
+        const previewContainer = document.getElementById('preview-container');
+        const generateButton = document.getElementById('generate-invite');
+        const formatButtons = document.querySelectorAll('.format-button');
+        const formatError = document.getElementById('format-error');
+        const downloadButton = document.getElementById('download-invite');
+        const loadingMessage = document.getElementById('loading-message');
+        const inviteTitle = document.getElementById('invite-title');
+
+        // Campos de entrada
+        const guestNameInput = document.getElementById('guest-name');
+        const churchAddressInput = document.getElementById('church-address');
+        const churchCityInput = document.getElementById('church-city');
+        const localTimeInput = document.getElementById('local-time');
+
+        // Campos de exibição
+        const displayGuestName = document.getElementById('display-guest-name');
+        const displayLocation = document.getElementById('display-location');
+        const displayTime = document.getElementById('display-time');
+        
+        // --- FUNÇÕES DE LÓGICA ---
+        
+        /**
+         * FUNÇÃO CRÍTICA PARA ESCALONAMENTO DE TEXTO
+         * Calcula o tamanho da fonte baseando-se EXCLUSIVAMENTE na largura do convite.
+         */
+        function scaleText() {
+            // Se o preview não está visível, reseta
+            if (previewContainer.classList.contains('hidden') || previewContainer.offsetWidth === 0) {
+                htmlElement.style.fontSize = '';
+                return;
+            }
+
+            const containerWidth = previewContainer.offsetWidth;
+            
+            // Fator de escala ajustado para manter proporção idêntica ao PC.
+            // containerWidth / 30 funciona bem para PC. 
+            // Removendo Math.max(12) para permitir que a fonte diminua o quanto for necessário no celular.
+            const scaleFactor = containerWidth / 30; 
+            
+            // Define o font-size do elemento raiz (HTML).
+            // Usamos Math.max(1, ...) apenas para evitar erro de 0px ou negativo, 
+            // mas permitimos valores pequenos como 8px ou 9px para celulares.
+            htmlElement.style.fontSize = `${Math.max(1, scaleFactor)}px`;
+        }
+
+        function showFormScreen() {
+            previewScreen.classList.add('hidden');
+            formScreen.classList.remove('hidden');
+            document.documentElement.style.fontSize = '16px'; 
+        }
+
+        function applyAspectRatioClasses(format) {
+            previewContainer.classList.remove('aspect-16-9', 'aspect-9-16');
+            if (format === '16:9') {
+                previewContainer.classList.add('aspect-16-9');
+                previewContainer.classList.remove('max-w-md'); 
+                previewContainer.classList.add('max-w-4xl'); 
+            } else if (format === '9:16') {
+                previewContainer.classList.add('aspect-9-16');
+                previewContainer.classList.add('max-w-md'); 
+                previewContainer.classList.remove('max-w-4xl');
+            }
+        }
+        
+        function showPreviewScreen() {
+            formScreen.classList.add('hidden');
+            previewScreen.classList.remove('hidden');
+            previewScreen.classList.add('flex');
+            
+            applyAspectRatioClasses(selectedFormat);
+            
+            // Garante escalonamento correto
+            setTimeout(scaleText, 10); 
+        }
+
+        function handleFormatSelection(event) {
+            formatButtons.forEach(btn => btn.classList.remove('bg-amber-600', 'border-amber-500'));
+            const clickedButton = event.currentTarget;
+            selectedFormat = clickedButton.dataset.format;
+            clickedButton.classList.add('bg-amber-600', 'border-amber-500');
+            formatError.classList.add('hidden');
+        }
+
+        function generateInvite() {
+            if (!selectedFormat) {
+                formatError.classList.remove('hidden');
+                return;
+            }
+
+            const rawGuestName = guestNameInput.value.trim();
+            const guestName = rawGuestName ? `Olá, ${rawGuestName}!` : "Olá, Convidado!"; 
+            displayGuestName.textContent = guestName;
+
+            const address = churchAddressInput.value.trim() || "Endereço da Igreja (Não Informado)";
+            const city = churchCityInput.value.trim() || "";
+            displayLocation.textContent = `${address}${city ? ', ' + city : ''}`;
+
+            const localTime = localTimeInput.value.trim();
+            let timeText;
+
+            if (localTime && localTime.replace(/\s/g, '').toLowerCase() !== '') {
+                timeText = `${localTime} (Horário Local)`;
+            } else {
+                timeText = '17h (Horário de Brasília)';
+            }
+
+            displayTime.innerHTML = `Horário: <span class="font-bold text-custom-white">${timeText}</span>`;
+            
+            // Ajuste condicional para quebra de linha do título
+            if (selectedFormat === '9:16') {
+                 inviteTitle.style.display = 'block'; // Garante o bloco padrão
+                 inviteTitle.innerHTML = '"Culto Internacional<br>Trombetas e Festas 2025"';
+            } else {
+                 // No 16:9, removemos o <br> para ficar na mesma linha se couber, ou deixamos o navegador quebrar
+                 inviteTitle.innerHTML = '"Culto Internacional Trombetas e Festas 2025"';
+            }
+            
+            const imageUrl = imageUrls[selectedFormat];
+            previewContainer.style.backgroundImage = `url('${imageUrl}')`;
+
+            showPreviewScreen();
+        }
+
+        async function downloadInvite() {
+            loadingMessage.classList.remove('hidden');
+            downloadButton.disabled = true;
+            await new Promise(resolve => setTimeout(resolve, 100));
+
+            const backButton = previewContainer.querySelector('button');
+            backButton.style.display = 'none';
+
+            try {
+                previewContainer.classList.remove('shadow-2xl', 'rounded-xl');
+                
+                const canvas = await html2canvas(previewContainer, {
+                    backgroundColor: null, 
+                    useCORS: true, 
+                    allowTaint: true,
+                    scale: 2 
+                });
+
+                const image = canvas.toDataURL("image/png");
+                const link = document.createElement('a');
+                const filename = `Convite-${displayGuestName.textContent.replace(/Olá, |!|\s/g, '-')}-${selectedFormat}.png`;
+                
+                link.download = filename;
+                link.href = image;
+                link.click();
+                
+            } catch (error) {
+                console.error("Erro:", error);
+                alert("Erro ao gerar imagem. Tente novamente.");
+            } finally {
+                backButton.style.display = 'flex'; 
+                previewContainer.classList.add('shadow-2xl', 'rounded-xl');
+                loadingMessage.classList.add('hidden');
+                downloadButton.disabled = false;
+                scaleText(); 
+            }
+        }
+
+        generateButton.addEventListener('click', generateInvite);
+        downloadButton.addEventListener('click', downloadInvite);
+        formatButtons.forEach(button => {
+            button.addEventListener('click', handleFormatSelection);
+        });
+
+        window.addEventListener('resize', () => {
+             if (!formScreen.classList.contains('hidden')) {
+                 scaleText();
+             }
+        });
+
+        showFormScreen(); 
+    </script>
+</body>
+</html>
