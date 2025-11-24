@@ -28,8 +28,10 @@
             flex-direction: column;
             justify-content: flex-end; /* Conteúdo na parte inferior da tela */
             position: relative;
-            /* Removemos min-height fixo para deixar o aspect-ratio controlar */
             width: 100%; 
+            /* CORREÇÃO CRÍTICA: Removemos min-height fixo (era 400px) */
+            /* A altura agora será definida exclusivamente pelo aspect-ratio */
+            min-height: 0; 
             transition: background-image 0.5s ease-in-out; 
             overflow: hidden; 
         }
@@ -37,20 +39,16 @@
         /* Classe para forçar a proporção 16:9 */
         .aspect-16-9 {
             aspect-ratio: 16 / 9;
-            /* No celular, 16:9 pode ficar muito pequeno em altura se a largura for pequena.
-               Mas para garantir que a imagem NÃO SEJA CORTADA, a proporção deve ser mantida. */
             width: 100%;
-            /* Se a tela for muito alta (celular), a imagem vai ocupar a largura total e a altura proporcional */
         }
 
         /* Classe para forçar a proporção 9:16 (retrato) */
         .aspect-9-16 {
             aspect-ratio: 9 / 16;
             /* Limita a altura para caber na tela do PC, mantendo a proporção. */
-            max-height: 85vh; 
+            max-height: 80vh; 
             /* Limita a largura para simular um celular no desktop */
             max-width: 400px;
-            /* Garante que ocupe o espaço necessário */
             width: 100%;
         }
 
@@ -67,7 +65,7 @@
         
         #preview-container {
              position: relative;
-             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); /* Sombra padrão via CSS para facilitar remoção */
+             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); /* Sombra padrão */
         }
         
         /* Classe personalizada para as cores */
@@ -159,7 +157,6 @@
         <div id="preview-screen" class="hidden flex flex-col items-center space-y-4 w-full">
             
             <!-- Contêiner do Convite (Alvo para o html2canvas) -->
-            <!-- Removemos classes de sombra do tailwind aqui e aplicamos via CSS para controle JS -->
             <div id="preview-container" class="preview-screen rounded-xl relative mx-auto">
                 
                 <!-- Overlay de Conteúdo Personalizado -->
@@ -267,11 +264,11 @@
 
             const containerWidth = previewContainer.offsetWidth;
             
-            // Fator de escala mantido.
+            // Fator de escala ajustado. 
+            // containerWidth / 30 funciona bem para PC.
             const scaleFactor = containerWidth / 30; 
             
-            // REMOVIDO O LIMITE MÍNIMO DE 12PX PARA CORRIGIR O BUG NO CELULAR
-            // Agora o texto vai diminuir proporcionalmente, não importa o quão pequena seja a tela.
+            // Define o font-size do elemento raiz.
             htmlElement.style.fontSize = `${Math.max(1, scaleFactor)}px`;
         }
 
@@ -286,15 +283,13 @@
             if (format === '16:9') {
                 previewContainer.classList.add('aspect-16-9');
                 previewContainer.classList.remove('max-w-md'); 
-                // Removemos a limitação de max-w-4xl para o 16:9 no celular, 
-                // ele deve ocupar 100% da largura e ajustar a altura pelo aspect-ratio
                 previewContainer.classList.add('w-full'); 
-                previewContainer.classList.add('max-w-4xl'); // Mantemos max-w no desktop
+                previewContainer.classList.add('max-w-4xl'); 
             } else if (format === '9:16') {
                 previewContainer.classList.add('aspect-9-16');
                 previewContainer.classList.add('max-w-md'); 
                 previewContainer.classList.remove('max-w-4xl');
-                previewContainer.classList.remove('w-full'); // Reseta comportamento padrão
+                previewContainer.classList.remove('w-full'); 
             }
         }
         
@@ -363,7 +358,7 @@
             backButton.style.display = 'none';
 
             try {
-                // Remove sombra via estilo direto já que mudamos a classe
+                // Remove sombra para evitar borda branca
                 previewContainer.style.boxShadow = 'none';
                 previewContainer.classList.remove('rounded-xl');
                 
@@ -387,7 +382,6 @@
                 alert("Erro ao gerar imagem. Tente novamente.");
             } finally {
                 backButton.style.display = 'flex'; 
-                // Restaura sombra
                 previewContainer.style.boxShadow = ''; 
                 previewContainer.classList.add('rounded-xl');
                 loadingMessage.classList.add('hidden');
