@@ -10,7 +10,7 @@
     <!-- Inclui a biblioteca html2canvas para permitir a geração da imagem (download) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
-    <!-- Configuração personalizada do Tailwind e CSS de controle de layout -->
+    <!-- Configuração personalizada do Tailwind para usar a fonte Inter e cores -->
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
         body {
@@ -22,13 +22,14 @@
         /* Estilo base para a tela de visualização */
         .preview-screen {
             background-size: cover;
-            background-position: top; /* Prioriza a parte superior da imagem */
+            background-position: top center; /* Centraliza o topo */
+            background-repeat: no-repeat;
             display: flex;
             flex-direction: column;
             justify-content: flex-end; /* Conteúdo na parte inferior da tela */
             position: relative;
+            /* Removemos min-height fixo para deixar o aspect-ratio controlar */
             width: 100%; 
-            min-height: 400px;
             transition: background-image 0.5s ease-in-out; 
             overflow: hidden; 
         }
@@ -36,13 +37,21 @@
         /* Classe para forçar a proporção 16:9 */
         .aspect-16-9 {
             aspect-ratio: 16 / 9;
+            /* No celular, 16:9 pode ficar muito pequeno em altura se a largura for pequena.
+               Mas para garantir que a imagem NÃO SEJA CORTADA, a proporção deve ser mantida. */
+            width: 100%;
+            /* Se a tela for muito alta (celular), a imagem vai ocupar a largura total e a altura proporcional */
         }
 
         /* Classe para forçar a proporção 9:16 (retrato) */
         .aspect-9-16 {
             aspect-ratio: 9 / 16;
-            max-height: 80vh; /* Ajuste para caber na tela do PC */
-            max-width: 400px; 
+            /* Limita a altura para caber na tela do PC, mantendo a proporção. */
+            max-height: 85vh; 
+            /* Limita a largura para simular um celular no desktop */
+            max-width: 400px;
+            /* Garante que ocupe o espaço necessário */
+            width: 100%;
         }
 
         .content-overlay {
@@ -58,6 +67,7 @@
         
         #preview-container {
              position: relative;
+             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); /* Sombra padrão via CSS para facilitar remoção */
         }
         
         /* Classe personalizada para as cores */
@@ -69,6 +79,15 @@
         }
         .text-custom-white {
             color: #f0f0f0 !important;
+        }
+
+        /* Ajustes para o formato 9:16, forçando a quebra de linha do título */
+        .aspect-9-16 #invite-title br {
+            display: block; 
+        }
+        /* Ajustes para o formato 16:9, escondendo a quebra de linha do título */
+        .aspect-16-9 #invite-title br {
+            display: none; 
         }
         
     </style>
@@ -137,10 +156,11 @@
         </div>
 
         <!-- TELA 2: Visualização do Convite Personalizado -->
-        <div id="preview-screen" class="hidden flex flex-col items-center space-y-4">
+        <div id="preview-screen" class="hidden flex flex-col items-center space-y-4 w-full">
             
             <!-- Contêiner do Convite (Alvo para o html2canvas) -->
-            <div id="preview-container" class="preview-screen rounded-xl shadow-2xl relative">
+            <!-- Removemos classes de sombra do tailwind aqui e aplicamos via CSS para controle JS -->
+            <div id="preview-container" class="preview-screen rounded-xl relative mx-auto">
                 
                 <!-- Overlay de Conteúdo Personalizado -->
                 <div class="content-overlay">
@@ -238,10 +258,8 @@
         
         /**
          * FUNÇÃO CRÍTICA PARA ESCALONAMENTO DE TEXTO
-         * Calcula o tamanho da fonte baseando-se EXCLUSIVAMENTE na largura do convite.
          */
         function scaleText() {
-            // Se o preview não está visível, reseta
             if (previewContainer.classList.contains('hidden') || previewContainer.offsetWidth === 0) {
                 htmlElement.style.fontSize = '';
                 return;
@@ -249,14 +267,11 @@
 
             const containerWidth = previewContainer.offsetWidth;
             
-            // Fator de escala ajustado para manter proporção idêntica ao PC.
-            // containerWidth / 30 funciona bem para PC. 
-            // Removendo Math.max(12) para permitir que a fonte diminua o quanto for necessário no celular.
+            // Fator de escala mantido.
             const scaleFactor = containerWidth / 30; 
             
-            // Define o font-size do elemento raiz (HTML).
-            // Usamos Math.max(1, ...) apenas para evitar erro de 0px ou negativo, 
-            // mas permitimos valores pequenos como 8px ou 9px para celulares.
+            // REMOVIDO O LIMITE MÍNIMO DE 12PX PARA CORRIGIR O BUG NO CELULAR
+            // Agora o texto vai diminuir proporcionalmente, não importa o quão pequena seja a tela.
             htmlElement.style.fontSize = `${Math.max(1, scaleFactor)}px`;
         }
 
@@ -271,11 +286,15 @@
             if (format === '16:9') {
                 previewContainer.classList.add('aspect-16-9');
                 previewContainer.classList.remove('max-w-md'); 
-                previewContainer.classList.add('max-w-4xl'); 
+                // Removemos a limitação de max-w-4xl para o 16:9 no celular, 
+                // ele deve ocupar 100% da largura e ajustar a altura pelo aspect-ratio
+                previewContainer.classList.add('w-full'); 
+                previewContainer.classList.add('max-w-4xl'); // Mantemos max-w no desktop
             } else if (format === '9:16') {
                 previewContainer.classList.add('aspect-9-16');
                 previewContainer.classList.add('max-w-md'); 
                 previewContainer.classList.remove('max-w-4xl');
+                previewContainer.classList.remove('w-full'); // Reseta comportamento padrão
             }
         }
         
@@ -286,7 +305,6 @@
             
             applyAspectRatioClasses(selectedFormat);
             
-            // Garante escalonamento correto
             setTimeout(scaleText, 10); 
         }
 
@@ -323,12 +341,10 @@
 
             displayTime.innerHTML = `Horário: <span class="font-bold text-custom-white">${timeText}</span>`;
             
-            // Ajuste condicional para quebra de linha do título
             if (selectedFormat === '9:16') {
-                 inviteTitle.style.display = 'block'; // Garante o bloco padrão
+                 inviteTitle.style.display = 'block'; 
                  inviteTitle.innerHTML = '"Culto Internacional<br>Trombetas e Festas 2025"';
             } else {
-                 // No 16:9, removemos o <br> para ficar na mesma linha se couber, ou deixamos o navegador quebrar
                  inviteTitle.innerHTML = '"Culto Internacional Trombetas e Festas 2025"';
             }
             
@@ -347,7 +363,9 @@
             backButton.style.display = 'none';
 
             try {
-                previewContainer.classList.remove('shadow-2xl', 'rounded-xl');
+                // Remove sombra via estilo direto já que mudamos a classe
+                previewContainer.style.boxShadow = 'none';
+                previewContainer.classList.remove('rounded-xl');
                 
                 const canvas = await html2canvas(previewContainer, {
                     backgroundColor: null, 
@@ -369,7 +387,9 @@
                 alert("Erro ao gerar imagem. Tente novamente.");
             } finally {
                 backButton.style.display = 'flex'; 
-                previewContainer.classList.add('shadow-2xl', 'rounded-xl');
+                // Restaura sombra
+                previewContainer.style.boxShadow = ''; 
+                previewContainer.classList.add('rounded-xl');
                 loadingMessage.classList.add('hidden');
                 downloadButton.disabled = false;
                 scaleText(); 
