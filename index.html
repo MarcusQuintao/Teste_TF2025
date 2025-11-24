@@ -217,7 +217,7 @@
             // Ajuste de escala para caber na altura fixa de 50%
             if (selectedFormat === '16:9') {
                 // 16:9 precisa de fonte menor
-                scaleFactor = containerWidth / 65; 
+                scaleFactor = containerWidth / 45; 
             } else {
                 // 9:16
                 scaleFactor = containerWidth / 35;
@@ -315,12 +315,18 @@
                 previewContainer.style.boxShadow = 'none';
                 previewContainer.classList.remove('rounded-xl');
                 
+                // RESOLUÇÃO DE ALTA QUALIDADE
+                // Detectamos o formato e calculamos a escala para atingir 1920px (16:9) ou 1080px (9:16)
+                const targetWidth = selectedFormat === '16:9' ? 1920 : 1080;
+                const currentWidth = previewContainer.offsetWidth;
+                // Escala necessária para atingir a resolução alvo
+                const scaleFactor = targetWidth / currentWidth;
+
                 const canvas = await html2canvas(previewContainer, {
                     backgroundColor: null, 
                     useCORS: true, 
                     allowTaint: true,
-                    // AUMENTO DA ESCALA PARA MELHORAR A QUALIDADE
-                    scale: 4 
+                    scale: scaleFactor // Usa a escala dinâmica para máxima nitidez
                 });
 
                 const image = canvas.toDataURL("image/png");
