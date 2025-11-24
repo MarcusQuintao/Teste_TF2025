@@ -204,7 +204,6 @@
         
         /**
          * FUNÇÃO DE ESCALA INTELIGENTE
-         * Ajusta o tamanho da fonte com base no formato para garantir que caiba nos 50% de altura.
          */
         function scaleText() {
             if (previewContainer.classList.contains('hidden') || previewContainer.offsetWidth === 0) {
@@ -215,19 +214,15 @@
             const containerWidth = previewContainer.offsetWidth;
             let scaleFactor;
 
-            // LÓGICA CRÍTICA AQUI:
+            // Ajuste de escala para caber na altura fixa de 50%
             if (selectedFormat === '16:9') {
-                // No formato 16:9, a altura é muito curta (proporcionalmente).
-                // Precisamos de uma fonte MUITO menor para caber em 50% da altura.
-                // Dividimos a largura por 65 para encolher bem o texto.
+                // 16:9 precisa de fonte menor
                 scaleFactor = containerWidth / 65; 
             } else {
-                // No formato 9:16 (celular), temos bastante altura.
-                // O padrão / 35 funciona bem.
+                // 9:16
                 scaleFactor = containerWidth / 35;
             }
             
-            // Define o font-size. Removemos travas mínimas altas para garantir que encolha no celular se precisar.
             htmlElement.style.fontSize = `${Math.max(1, scaleFactor)}px`;
         }
 
@@ -259,7 +254,6 @@
             
             applyAspectRatioClasses(selectedFormat);
             
-            // Pequeno delay para o navegador renderizar o tamanho do container antes de calcular a fonte
             setTimeout(scaleText, 10); 
         }
 
@@ -325,7 +319,8 @@
                     backgroundColor: null, 
                     useCORS: true, 
                     allowTaint: true,
-                    scale: 2 
+                    // AUMENTO DA ESCALA PARA MELHORAR A QUALIDADE
+                    scale: 3 
                 });
 
                 const image = canvas.toDataURL("image/png");
