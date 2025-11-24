@@ -29,8 +29,7 @@
             justify-content: flex-end; /* Alinha o conteúdo na parte inferior */
             position: relative;
             width: 100%; 
-            /* CORREÇÃO CRÍTICA: Removemos min-height fixo (era 400px) */
-            /* A altura agora será definida exclusivamente pelo aspect-ratio */
+            /* A altura é definida exclusivamente pelo aspect-ratio */
             min-height: 0; 
             transition: background-image 0.5s ease-in-out; 
             overflow: hidden; 
@@ -55,17 +54,21 @@
         .content-overlay {
             background-color: rgba(0, 0, 0, 0.6); /* Fundo semi-transparente para o texto */
             
-            /* AJUSTE SOLICITADO: Altura fixa de 50% da imagem pai */
-            height: 50%; 
+            /* CORREÇÃO DEFINITIVA DE ALTURA: */
+            /* Define altura automática para crescer com o texto */
+            height: auto;
+            /* Garante que ocupe pelo menos 50%, mas cresça se precisar */
+            min-height: 50%;
             
-            /* Flexbox para centralizar e distribuir o conteúdo dentro dos 50% */
+            /* Flexbox para centralizar e distribuir o conteúdo */
             display: flex;
             flex-direction: column;
             justify-content: center; /* Centraliza verticalmente */
             align-items: center;     /* Centraliza horizontalmente */
             
-            /* Padding base em REM, será escalonado pelo JS */
-            padding: 0.5rem 1rem; 
+            /* Padding para garantir que o texto não encoste nas bordas */
+            padding: 1.5rem 1rem; 
+            
             width: 100%;
             text-align: center;
             border-top-left-radius: 0.5rem;
