@@ -26,7 +26,7 @@
             background-repeat: no-repeat;
             display: flex;
             flex-direction: column;
-            justify-content: flex-end; /* Conteúdo na parte inferior da tela */
+            justify-content: flex-end; /* Alinha o conteúdo na parte inferior */
             position: relative;
             width: 100%; 
             /* CORREÇÃO CRÍTICA: Removemos min-height fixo (era 400px) */
@@ -54,8 +54,18 @@
 
         .content-overlay {
             background-color: rgba(0, 0, 0, 0.6); /* Fundo semi-transparente para o texto */
+            
+            /* AJUSTE SOLICITADO: Altura fixa de 50% da imagem pai */
+            height: 50%; 
+            
+            /* Flexbox para centralizar e distribuir o conteúdo dentro dos 50% */
+            display: flex;
+            flex-direction: column;
+            justify-content: center; /* Centraliza verticalmente */
+            align-items: center;     /* Centraliza horizontalmente */
+            
             /* Padding base em REM, será escalonado pelo JS */
-            padding: 0.75rem 1rem; 
+            padding: 0.5rem 1rem; 
             width: 100%;
             text-align: center;
             border-top-left-radius: 0.5rem;
@@ -161,24 +171,24 @@
                 
                 <!-- Overlay de Conteúdo Personalizado -->
                 <div class="content-overlay">
-                    <p class="text-sm font-bold uppercase text-custom-red mb-4">CONVITE ESPECIAL</p>
+                    <p class="text-sm font-bold uppercase text-custom-red mb-1 sm:mb-2">CONVITE ESPECIAL</p>
 
                     <!-- DADOS PERSONALIZADOS -->
                     <!-- Nome do Convidado -->
-                    <h2 class="text-2xl font-extrabold mb-2 text-custom-yellow" id="display-guest-name">Olá, Convidado!</h2>
+                    <h2 class="text-2xl font-extrabold mb-1 text-custom-yellow" id="display-guest-name">Olá, Convidado!</h2>
 
                     <!-- Texto fixo -->
-                    <p class="text-sm text-custom-white mb-2">
+                    <p class="text-sm text-custom-white mb-1 sm:mb-2">
                         Você e sua família são nossos convidados de honra para o:
                     </p>
                     
                     <!-- Nome do Culto (Fixo) com quebra de linha condicional para 9:16 -->
-                    <p class="text-lg font-bold text-custom-red mb-4" id="invite-title">
+                    <p class="text-lg font-bold text-custom-red mb-2 sm:mb-3" id="invite-title">
                         "Culto Internacional<br>Trombetas e Festas 2025"
                     </p>
                     
                     <!-- Texto Fixo da Informação do Evento -->
-                    <div class="text-sm text-gray-200 space-y-1">
+                    <div class="text-sm text-gray-200 space-y-0.5 sm:space-y-1">
                         <p class="text-custom-white">Será um evento de alerta para o mundo sobre os acontecimentos atuais que antecedem a volta de Jesus.</p>
                         
                         <!-- Data e Horário -->
@@ -187,7 +197,7 @@
                             <p id="display-time">Horário: <span class="font-bold text-custom-white">17h (Horário de Brasília)</span></p>
                         </div>
 
-                        <p class="mt-2 text-custom-white">Convidamos vocês para assistirem ao evento conosco no endereço:</p>
+                        <p class="mt-1 sm:mt-2 text-custom-white">Convidamos vocês para assistirem ao evento conosco no endereço:</p>
                         
                         <!-- Endereço e Cidade -->
                         <p class="font-bold text-custom-yellow" id="display-location">
