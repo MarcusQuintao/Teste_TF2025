@@ -54,11 +54,10 @@
         .content-overlay {
             background-color: rgba(0, 0, 0, 0.6); /* Fundo semi-transparente para o texto */
             
-            /* CORREÇÃO DEFINITIVA DE ALTURA: */
-            /* Define altura automática para crescer com o texto */
-            height: auto;
-            /* Garante que ocupe pelo menos 50%, mas cresça se precisar */
-            min-height: 50%;
+            /* CORREÇÃO DEFINITIVA DE ALTURA FIXA: */
+            /* Define altura EXATA de 50% da imagem pai */
+            height: 50%;
+            /* Removemos min-height e height: auto para não crescer mais que isso */
             
             /* Flexbox para centralizar e distribuir o conteúdo */
             display: flex;
@@ -67,13 +66,16 @@
             align-items: center;     /* Centraliza horizontalmente */
             
             /* Padding para garantir que o texto não encoste nas bordas */
-            padding: 1.5rem 1rem; 
+            padding: 0.5rem 1rem; 
             
             width: 100%;
             text-align: center;
             border-top-left-radius: 0.5rem;
             border-top-right-radius: 0.5rem;
             z-index: 10;
+            
+            /* Garante que se o texto for muito grande, não quebre o layout (segurança) */
+            overflow: hidden; 
         }
         
         #preview-container {
@@ -277,9 +279,9 @@
 
             const containerWidth = previewContainer.offsetWidth;
             
-            // Fator de escala ajustado. 
-            // containerWidth / 30 funciona bem para PC.
-            const scaleFactor = containerWidth / 30; 
+            // Fator de escala ajustado para / 45. 
+            // Isso deixa a fonte menor para garantir que caiba dentro dos 50% de altura.
+            const scaleFactor = containerWidth / 45; 
             
             // Define o font-size do elemento raiz.
             htmlElement.style.fontSize = `${Math.max(1, scaleFactor)}px`;
