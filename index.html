@@ -234,6 +234,12 @@
                     formatButton.click();
                 }
             }
+
+            // --- NOVO: Limpa a URL após a leitura para estética ---
+            if (window.history.replaceState) {
+                const novaURL = window.location.protocol + "//" + window.location.host + window.location.pathname;
+                window.history.replaceState({path: novaURL}, '', novaURL);
+            }
         }
 
         /**
