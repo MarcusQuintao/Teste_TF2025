@@ -203,6 +203,40 @@
         const displayTime = document.getElementById('display-time');
         
         /**
+         * FUNÇÃO PARA LER PARÂMETROS DA URL E PREENCHER OS CAMPOS
+         */
+        function populateFieldsFromURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            // Pega os valores dos parametros
+            const nome = urlParams.get('nome');
+            const endereco = urlParams.get('endereco');
+            const cidade = urlParams.get('cidade');
+            const horario = urlParams.get('horario');
+            const formato = urlParams.get('formato'); // Novo parametro: 16:9 ou 9:16
+
+            // Se existirem, preenche os campos
+            if (nome) guestNameInput.value = nome;
+            if (endereco) churchAddressInput.value = endereco;
+            if (cidade) churchCityInput.value = cidade;
+            if (horario) localTimeInput.value = horario;
+
+            // Seleciona o formato automaticamente
+            if (formato) {
+                // Decodifica caso venha com caracteres encoded como 16%3A9
+                const decodedFormat = decodeURIComponent(formato);
+                
+                // Encontra o botão com o data-format correspondente
+                const formatButton = document.querySelector(`.format-button[data-format="${decodedFormat}"]`);
+                
+                if (formatButton) {
+                    // Simula o clique para ativar a lógica visual e setar a variável global
+                    formatButton.click();
+                }
+            }
+        }
+
+        /**
          * FUNÇÃO DE ESCALA INTELIGENTE
          */
         function scaleText() {
@@ -217,7 +251,7 @@
             // Ajuste de escala para caber na altura fixa de 50%
             if (selectedFormat === '16:9') {
                 // 16:9 precisa de fonte menor
-                scaleFactor = containerWidth / 45; 
+                scaleFactor = containerWidth / 65; 
             } else {
                 // 9:16
                 scaleFactor = containerWidth / 35;
@@ -312,6 +346,7 @@
             backButton.style.display = 'none';
 
             try {
+                // Remove sombra para evitar borda branca
                 previewContainer.style.boxShadow = 'none';
                 previewContainer.classList.remove('rounded-xl');
                 
@@ -362,7 +397,14 @@
              }
         });
 
+        // --- INICIALIZAÇÃO ---
+        
+        // 1. Preenche campos se houver parâmetros na URL
+        populateFieldsFromURL();
+
+        // 2. Mostra o formulário
         showFormScreen(); 
+        
     </script>
 </body>
 </html>
